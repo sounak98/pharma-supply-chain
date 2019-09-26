@@ -1,6 +1,6 @@
-# pharma-supply-chain
+# pharmaceutical-supply-chain
 
-Supply Chain based on Algorand Blockchain in Pharma Supply
+Pharmaceutical Supply Chain based on Algorand Blockchain.
 
 ## System Structure and Flow
 
@@ -8,8 +8,9 @@ Supply Chain based on Algorand Blockchain in Pharma Supply
 
 - Farmers
 - Manufacturers
+- Transporters
 - Distributors
-- Medicine Stores or Hospitals
+- Pharmacies
 - Patients
 
 ### Actions
@@ -44,7 +45,7 @@ Sends raw materials to manufacturers. Multiple farmers can send different raw ma
 
 #### Manufacturers
 
-Manufactures the medicines and sends the medicines to different distributors.
+Manufactures the medicines and sends the medicines to different distributors via transporters.
 
 ```json
 {
@@ -54,6 +55,11 @@ Manufactures the medicines and sends the medicines to different distributors.
       "lat": 000,
       "lon": 000
     }
+  },
+  "transporter": {
+    "name": "...",
+    "min_temp": "...",
+    "max_temp": "..."
   },
   "distributor": {
     "name": "..."
@@ -72,6 +78,7 @@ Manufactures the medicines and sends the medicines to different distributors.
 }
 ```
 
+_Note: Transporter contains an IOT sensor which will be triggered on unallowed temperatures_
 #### Distributors
 
 Updates the location of the transport in fixed interval of time.
@@ -91,7 +98,7 @@ Updates the location of the transport in fixed interval of time.
 }
 ```
 
-#### Medicine Stores and Hospitals
+#### Pharmacies
 
 Accepts batches of medicines from distributors.
 
@@ -100,7 +107,7 @@ Accepts batches of medicines from distributors.
   "distributor": {
     "name": "..."
   },
-  "retailer": {
+  "pharmacy": {
     "name": "...",
     "location": {
       "lat": 000,
@@ -112,7 +119,7 @@ Accepts batches of medicines from distributors.
 }
 ```
 
-### Patient
+### Users / Patients
 
 Buys medicines from shops or hospitals.
 
