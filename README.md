@@ -44,7 +44,7 @@ Sends raw materials to manufacturers. Multiple farmers can send different raw ma
 
 #### Manufacturers
 
-Manufactures the medicines and sends the medicines to different Distributors.
+Manufactures the medicines and sends the medicines to different distributors.
 
 ```json
 {
@@ -129,3 +129,13 @@ Buys medicines from shops or hospitals.
   "time": 000
 }
 ```
+
+## Portal UI/UX
+
+### Features
+
+- Anyone with the unique identifier of a batch should be able to view the current status of a particular batch.
+  - If the retailer wants to verify that the medicine was from a authorized manufacturer and that the distributor brought it in proper conditions, he can view that by searching the batch serial (unique identifier of a batch)
+  - If a patient wants to verify the same, even he can do that in the same way.
+- Any actor should be able to emit events of the structures mentioned above once they are satisfied with the previous progress and takes up their task.
+  - In the case of the distributor this will be handled by an IoT device (temperature sensor fitted with camera?)
