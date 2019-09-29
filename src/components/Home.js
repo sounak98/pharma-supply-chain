@@ -36,7 +36,7 @@ const styles = theme => ({
     borderRadius: "40px"
   },
   input: {
-    marginLeft: theme.spacing(1),
+    marginLeft: theme.spacing(2),
     flex: 1
   },
   iconButton: {
