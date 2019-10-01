@@ -6,20 +6,20 @@ require("dotenv").config();
 // import { purchase } from './templates/purchase';
 // import { attestation } from './templates/attestation';
 
-const atoken = process.env.ACCESS_TOKEN;
-const aserver = process.env.SERVER_URL;
-const aport = process.env.PORT;
-const algodclient = new algosdk.Algod(atoken, aserver, aport);
-
-const keypress = async () => {
-  process.stdin.setRawMode(true);
-  return new Promise(resolve =>
-    process.stdin.once("data", () => {
-      process.stdin.setRawMode(false);
-      resolve();
-    })
-  );
+// for GET transaction
+const atoken = {
+  "X-API-Key": process.env.API_KEY
 };
+
+// for POST transaction
+const ptoken = {
+  "X-API-Key": process.env.API_KEY,
+  "content-type": "application/x-binary"
+};
+const aserver = process.env.SERVER;
+const aport = "";
+const algodclient = new algosdk.Algod(atoken, aserver, aport);
+const p_algodclient = new algosdk.Algod(ptoken, aserver, aport);
 
 const getAccount = mnemonic => {
   return algosdk.mnemonicToSecretKey(mnemonic);
@@ -59,10 +59,15 @@ const purchaseFarmer = async (
     farmerManufactureParams,
     manufacturer.sk
   ).blob;
+
   //submit the transaction
-  let tx = await algodclient.sendRawTransaction(twosigs);
-  console.log("Transaction : " + tx.txId);
-  return tx.txId;
+  try {
+    let tx = await p_algodclient.sendRawTransaction(twosigs);
+    console.log("Transaction : " + tx.txId);
+    return tx.txId;
+  } catch (err) {
+    console.log("err", err); // throws undefined when send with account with no money
+  }
 };
 
 var manufacturer = getAccount(process.env.MANUFACTURER);
@@ -149,29 +154,29 @@ const deliverDistributor = async (
     distributor.sk
   ).blob;
   //submit the transaction
-  let tx = await algodclient.sendRawTransaction(threesigs);
-  console.log("Delivery Transaction : " + tx.txId);
-  return tx.txId;
+  try {
+    let tx = await p_algodclient.sendRawTransaction(threesigs);
+    console.log("Delivery Transaction : " + tx.txId);
+    return tx.txId;
+  } catch (err) {
+    console.log("err", err); // throws undefined when send with account with no money
+  }
 };
 
 const decodeNote = async (multiSig, txId) => {
-  console.log("heiilll");
+  console.log("Let's Decode Note");
   try {
-    let tx = await algodclient.transactionById(txId);
+    let tx = await algodclient.transactionInformation(multiSig, txId);
+    console.log(tx)
+    let encodednote = JSON.stringify(algosdk.decodeObj(tx.note), undefined, 4);
+    console.log("Decoded: " + encodednote);
+    return encodednote;
   } catch (err) {
-    console.log("err", err);  
+    console.log("err", err);
   }
-  // console.log(tx)
-  console.log("heii");
-  let encodednote = JSON.stringify(algosdk.decodeObj(tx.note), undefined, 4);
-  console.log("hi");  
-  console.log("Decoded: " + encodednote);
-  return encodednote;
 };
 
 var farmerManufactureMultsig = algosdk.multisigAddress(farmerManufactureParams);
-// var farmerManufactureMultsig =
-// "DPRTAEUY5GC52JTZWGRKDCDYNRF7CYCYGGQTNUXPVLPDTSNMQ7C2GGKFZE";
 console.log("Purchase Multisig Address: " + farmerManufactureMultsig);
 
 (async () => {
@@ -183,10 +188,11 @@ console.log("Purchase Multisig Address: " + farmerManufactureMultsig);
     purchase
   );
   console.log(txID);
-  let note = await decodeNote(
-    farmerManufactureMultsig,
-    txID
-  );
+
+  //waiting for one block so that transaction confirms
+  params = await algodclient.getTransactionParams();
+  await algodclient.statusAfterBlock(params.lastRound + 1);
+  let note = await decodeNote(farmerManufactureMultsig, txID);
 })().catch(e => {
   console.log(e.error);
 });
@@ -244,29 +250,19 @@ let delivery = {
     purchase
   );
   console.log(txID);
+  params = await algodclient.getTransactionParams();
+  await algodclient.statusAfterBlock(params.lastRound + 1);
   let note = await decodeNote(
     deliveryMultisig,
     txID
   );
-  // console.log(note);
+  let delivery = JSON.parse(note);
+  let batchID = delivery.medicines[0].id;
+  
 })().catch(e => {
   console.log(e.error);
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// let txId2 = "THPWELXO36WGGGXU6GZPN3TWCOWP64IVQIVEUQAY5HIKYSX343VQ";
 
 // (async () => {
 //   let params = await algodclient.getTransactionParams();
@@ -275,30 +271,30 @@ let delivery = {
 //   let encodednote = JSON.stringify(algosdk.decodeObj(tx.note), undefined, 4);
 //   console.log("Decoded Delivery: " + encodednote);
 
-  // let delivery = JSON.parse(encodednote);
-  // let batchID = delivery.medicines[0].id;
+// let delivery = JSON.parse(encodednote);
+// let batchID = delivery.medicines[0].id;
 
-  // let endRound = params.lastRound + parseInt(1000);
-  // let attestation = {
-  //   delivery: txId2
-  // }
-  // let txn = {
-  //   from: distributor.addr,
-  //   to: batchID,
-  //   fee: params.fee,
-  //   amount: 100000,
-  //   firstRound: params.lastRound,
-  //   lastRound: endRound,
-  //   genesisID: params.genesisID,
-  //   genesisHash: params.genesishashb64,
-  //   note: algosdk.encodeObj(attestation)
-  // };
+// let endRound = params.lastRound + parseInt(1000);
+// let attestation = {
+//   delivery: txId2
+// }
+// let txn = {
+//   from: distributor.addr,
+//   to: batchID,
+//   fee: params.fee,
+//   amount: 100000,
+//   firstRound: params.lastRound,
+//   lastRound: endRound,
+//   genesisID: params.genesisID,
+//   genesisHash: params.genesishashb64,
+//   note: algosdk.encodeObj(attestation)
+// };
 
-  // let signedTxn = algosdk.signTransaction(txn, distributor.sk);
-  // let tx3 = await algodclient.sendRawTransaction(signedTxn.blob);
-  // console.log("Attestation to batch : " + tx3.txId);
+// let signedTxn = algosdk.signTransaction(txn, distributor.sk);
+// let tx3 = await algodclient.sendRawTransaction(signedTxn.blob);
+// console.log("Attestation to batch : " + tx3.txId);
 // })().catch(e => {
-  // console.log(e.error);
+// console.log(e.error);
 // });
 
 // let batchID = "TIR5USMFQAGFALAHB33ZDTGMF5GW6MO4GO62VUFVFM4VBKDPUZVT5JIJB4";
