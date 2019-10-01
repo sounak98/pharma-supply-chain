@@ -1,11 +1,6 @@
 const algosdk = require("algosdk");
 require("dotenv").config();
 
-// import { keypress } from './helpers';
-// import { delivery } from './templates/delivery';
-// import { purchase } from './templates/purchase';
-// import { attestation } from './templates/attestation';
-
 // for GET transaction
 const atoken = {
   "X-API-Key": process.env.API_KEY
@@ -101,7 +96,7 @@ let purchase = {
   date: "15435434",
   ingredients: [
     {
-      name: "urea",
+      name: "carrots",
       quantity: "10",
       price: 10000
     },
@@ -167,7 +162,7 @@ const decodeNote = async (multiSig, txId) => {
   console.log("Let's Decode Note");
   try {
     let tx = await algodclient.transactionInformation(multiSig, txId);
-    console.log(tx)
+    console.log(tx.txId);
     let encodednote = JSON.stringify(algosdk.decodeObj(tx.note), undefined, 4);
     console.log("Decoded: " + encodednote);
     return encodednote;
@@ -179,6 +174,7 @@ const decodeNote = async (multiSig, txId) => {
 var farmerManufactureMultsig = algosdk.multisigAddress(farmerManufactureParams);
 console.log("Purchase Multisig Address: " + farmerManufactureMultsig);
 
+var purchaseId = '34UTXBRGBFJAHLMPOKXTCWX2XO2E5GQGSHLDEX2LP5OOXXH2L34A';
 (async () => {
   let txID = await purchaseFarmer(
     manufacturer,
@@ -188,6 +184,7 @@ console.log("Purchase Multisig Address: " + farmerManufactureMultsig);
     purchase
   );
   console.log(txID);
+  purchaseId = txID;
 
   //waiting for one block so that transaction confirms
   params = await algodclient.getTransactionParams();
@@ -214,11 +211,10 @@ const deliveryParams = {
   addrs: [manufacturer.addr, transport.addr, distributor.addr]
 };
 
-var deliveryMultisig =
-  "YP7XCRFZFPPX7KNB337YP6YMIA3NRXIMO75CLZYM7DMYAP6KHO4EWNPXEY";
+var deliveryMultisig = algosdk.multisigAddress(deliveryParams);
 console.log("Delivery Multisig " + deliveryMultisig);
 
-let delivery = {
+var delivery = {
   transporter: {
     name: "Bob",
     vehicleNo: "VN07"
@@ -229,82 +225,66 @@ let delivery = {
   distributor: {
     name: "Zenus"
   },
-  ingredientSource: "TF7F53TD5YSWTR4C5635RXMXFKPO2NL7DEQEE36UGLMUFUNNYD5Q",
+  ingredientSource: purchaseId,
   medicines: [
     {
       name: "Calpol",
       quantity: 500,
       price: 100,
-      id: "TIR5USMFQAGFALAHB33ZDTGMF5GW6MO4GO62VUFVFM4VBKDPUZVT5JIJB4"
+      id: medicineBatch.addr
     }
   ]
 };
 
+
 (async () => {
+  console.log(delivery);
   let txID = await deliverDistributor(
     manufacturer,
     transport,
     distributor,
     deliveryMultisig,
     deliveryParams,
-    purchase
+    delivery
   );
+  console.log("In distributor");
   console.log(txID);
   params = await algodclient.getTransactionParams();
   await algodclient.statusAfterBlock(params.lastRound + 1);
-  let note = await decodeNote(
-    deliveryMultisig,
-    txID
-  );
-  let delivery = JSON.parse(note);
-  let batchID = delivery.medicines[0].id;
-  
+  let note = await decodeNote(deliveryMultisig, txID);
+  let deliveryw = JSON.parse(note);
+  let batchID = deliveryw.medicines[0].id;
+  console.log(deliveryw);
+  console.log(batchID);
+
+  let endRound = params.lastRound + parseInt(1000);
+  let attestation = {
+    deliverye: txID
+  };
+  let txn = {
+    from: distributor.addr,
+    to: batchID,
+    fee: params.fee,
+    amount: 100000,
+    firstRound: params.lastRound,
+    lastRound: endRound,
+    genesisID: params.genesisID,
+    genesisHash: params.genesishashb64,
+    note: algosdk.encodeObj(attestation)
+  };
+  let signedTxn = algosdk.signTransaction(txn, distributor.sk);
+  var attestedId;
+  try {
+    let tx = await p_algodclient.sendRawTransaction(signedTxn.blob);
+    console.log("Attestation to batch : " + tx.txId);
+    attestedId = tx.txId;
+  } catch (err) {
+    console.log("err", err); // throws undefined when send with account with no money
+  }
+  params = await algodclient.getTransactionParams();
+  await algodclient.statusAfterBlock(params.lastRound + 1);
+  let attestedNote = await decodeNote(batchID, attestedId);
+  console.log("Decoding Attestation : " + attestedNote);
 })().catch(e => {
   console.log(e.error);
 });
-
-
-// (async () => {
-//   let params = await algodclient.getTransactionParams();
-
-//   let tx = await algodclient.transactionInformation(deliveryMultisig, txId2);
-//   let encodednote = JSON.stringify(algosdk.decodeObj(tx.note), undefined, 4);
-//   console.log("Decoded Delivery: " + encodednote);
-
-// let delivery = JSON.parse(encodednote);
-// let batchID = delivery.medicines[0].id;
-
-// let endRound = params.lastRound + parseInt(1000);
-// let attestation = {
-//   delivery: txId2
-// }
-// let txn = {
-//   from: distributor.addr,
-//   to: batchID,
-//   fee: params.fee,
-//   amount: 100000,
-//   firstRound: params.lastRound,
-//   lastRound: endRound,
-//   genesisID: params.genesisID,
-//   genesisHash: params.genesishashb64,
-//   note: algosdk.encodeObj(attestation)
-// };
-
-// let signedTxn = algosdk.signTransaction(txn, distributor.sk);
-// let tx3 = await algodclient.sendRawTransaction(signedTxn.blob);
-// console.log("Attestation to batch : " + tx3.txId);
-// })().catch(e => {
-// console.log(e.error);
-// });
-
-// let batchID = "TIR5USMFQAGFALAHB33ZDTGMF5GW6MO4GO62VUFVFM4VBKDPUZVT5JIJB4";
-// let attestedId = "IJ2ENWJKYSHVP3JXSC6XQHH4JAX4HZ7JQ3WXLEJOTABXIULPQXBQ";
-// (async () => {
-//   let params = await algodclient.getTransactionParams();
-
-//   let tx = await algodclient.transactionInformation(batchID, attestedId);
-//   let encodednote = JSON.stringify(algosdk.decodeObj(tx.note), undefined, 4);
-//   console.log("Decoded Delivery: " + encodednote);
-// })().catch(e => {
-//   console.log(e.error);
-// });
