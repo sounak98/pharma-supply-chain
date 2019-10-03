@@ -15,6 +15,8 @@ import NavBar from "./NavBar";
 import CheckpointCard from "./CheckpointCard";
 import Hero from "../assets/hero.jpg";
 
+import { getCheckpointsFromBatchId } from "../utils";
+
 const styles = theme => ({
   hero: {
     width: "100%",
@@ -58,6 +60,15 @@ const manufacturer = {
 };
 
 class Home extends Component {
+  state = {
+    batchId: "ARP6FRGFDZ42UMVH5JGUODO5ESGYBVHYV6MKMDHZPGBESLC4IHIM6SP5VY"
+  };
+
+  getCheckpoints = async () => {
+    let checkpoints = await getCheckpointsFromBatchId(this.state.batchId);
+    console.log(checkpoints);
+  };
+
   render() {
     const { classes } = this.props;
     return (
@@ -84,7 +95,11 @@ class Home extends Component {
               className={classes.input}
               placeholder="Enter the Batch Address on your Medicine Packaging"
             />
-            <IconButton className={classes.iconButton} aria-label="search">
+            <IconButton
+              className={classes.iconButton}
+              aria-label="search"
+              onClick={this.getCheckpoints}
+            >
               <SearchIcon />
             </IconButton>
           </Paper>
