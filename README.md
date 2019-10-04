@@ -13,128 +13,145 @@ Pharmaceutical Supply Chain based on Algorand Blockchain.
 - Pharmacies
 - Patients
 
-### Actions
+### Interactions
 
-#### Farmers
+#### Purchase
 
-Sends raw materials to manufacturers. Multiple farmers can send different raw materials to a manufacturer for a particular medicine.
+Farmer will send raw materials to Manufacturer. Multiple farmers can send different raw materials to a manufacturer for a particular medicine.
 
 ```json
 {
-  "farmer": {
-    "name": "...",
-    "location": {
-      "lat": 000,
-      "lon": 000
-    }
-  },
-  "manufacturer": {
-    "name": "...",
-    "location": {
-      "lat": 000,
-      "lon": 000
-    }
-  },
-  "raw_material": {
-    "name": "...",
-    "description": "..."
-  },
-  "time": 000
+    "seller": {
+      "name": "",
+      "age": 0,
+      "location": {
+        "lat": "",
+        "lng": ""
+      }
+    },
+    "buyer": {
+      "name": "",
+      "location": {
+        "lat": "",
+        "lng": ""
+      }
+    },
+    "timestamp": "",
+    "ingredients": [
+      {
+        "name": "",
+        "quantity": "",
+        "price": 0
+      },
+      {
+        "name": "",
+        "quantity": "",
+        "price": 0
+      }
+    ]
 }
 ```
 
-#### Manufacturers
+A `farmerManufacture` multisig account will be created which will be signed by farmer once he send the ingredients and then manufacture can confirm it and release funds to the farmer.
+
+After this manufacture will prepare medicine and then divide it among batches, each batch will be an account with `batchId` as it's account address. Manufacture will send each batch a tx with a note like this template:
+```json
+{
+  "name": "Purchase",
+  "proof": txID
+}
+```
+`proof` is the txId of transaction between farmer and manufacture.
+#### Delivery
 
 Manufactures the medicines and sends the medicines to different distributors via transporters.
 
 ```json
 {
   "manufacturer": {
-    "name": "...",
+    "name": "",
     "location": {
-      "lat": 000,
-      "lon": 000
+      "lat": 0,
+      "lng": 0
     }
   },
   "transporter": {
-    "name": "...",
-    "min_temp": "...",
-    "max_temp": "..."
+    "name": "",
+    "vehicleNo": "",
+    "tempSensor": {
+      "ideal": 0, // in celsius
+      "crossed" : 0
+    }
   },
+  "timestamp": 3232323,
   "distributor": {
-    "name": "..."
+    "name": "",
+    "location": {
+      "lat": 0,
+      "lng": 0
+    }
   },
-  "medicine": {
-    "batch_serial": 000,
-    "quantity": 000,
-    "name": "...",
-    "description": "...",
-    "mrp": 000,
-    "expiry": 000,
-    "properties": {
-      "color": "..."
+  "ingredientSource": "",
+  "medicines": {
+    "quantity": 0,
+    "name": "",
+    "price": 0,
+    "batchId": ""
     }
   }
 }
 ```
 
-_Note: Transporter contains an IOT sensor which will be triggered on unallowed temperatures_
-#### Distributors
+Again a three way multisig will be created between transporter. distributor and manufacturer. First manufacture will sign, then transporter after he completes the delivery and in the end distributor will sign to release the funds to manufacturer from him.
 
-Updates the location of the transport in fixed interval of time.
+The truck has a IOT sensor within it which automatically increment a value if temp exceeds the `ideal` value. The duration of temp above than ideal value is used to calculate `score` for the medicine. 
+`score = 10 * (1 - crossed / 240)` On avg it should take 240 minutes to reach destination. Now the distributor will send a tx to the batchId of medicine with the same template as manufacture did with just one extra field, `score`.
+
+_Note that if `score < 7` then distributor will have to reject the batch_
+
+#### Transferring 
+
+Distributor transfers the medicine to pharmacies.
 
 ```json
 {
-  "distributor": {
-    "name": "..."
-  },
-  "batch_serial": 000,
-  "time": 000,
-  "live_location": {
-    "lat": 000,
-    "lon": 000
-  },
-  "temperature": 000
+    "distributor": {
+      "name": "",
+      "location": {
+        "lat": "",
+        "lng": ""
+      }
+    },
+    "medicines": [
+      {
+        "name": "",
+        "quantity": 0,
+        "price": 0,
+        "id": medicineBatch.addr
+      }
+    ],
+    "pharmacy": {
+      "name": "",
+      "location": {
+        "lat": "",
+        "lng": ""
+      }
+    },
+    "source": deliverId,
+    "timestamp": ''
 }
 ```
+Pharmacies will send a tx with `transfer` note to the batchID.
 
-#### Pharmacies
+#### Buying Medicine
 
-Accepts batches of medicines from distributors.
-
-```json
-{
-  "distributor": {
-    "name": "..."
-  },
-  "pharmacy": {
-    "name": "...",
-    "location": {
-      "lat": 000,
-      "lon": 000
-    }
-  },
-  "batch_serial": 000,
-  "time": 000
-}
-```
-
-### Users / Patients
-
-Buys medicines from shops or hospitals.
+Patients will go to pharmacies to buy medicines. Before buying they can see the `batchId` written on top of medicine and then they can just enter that id in our explorer to get the complete history of that medicine starting from it's ingredients. He'll also be able to see the score by distributor.
 
 ```json
 {
-  "acceptor": {
-    "name": "...",
-    "location": {
-      "lat": 000,
-      "lon": 000
-    }
-  },
-  "batch_serial": 000,
-  "time": 000
-}
+  "name": "",
+  "proof": "",
+  "score": 0, (Conditional Parameter)
 ```
 
 ## Portal UI/UX
