@@ -61,13 +61,18 @@ const manufacturer = {
 
 class Home extends Component {
   state = {
-    batchId: "ARP6FRGFDZ42UMVH5JGUODO5ESGYBVHYV6MKMDHZPGBESLC4IHIM6SP5VY"
+    batchId: "GYSFIKN4UQFI4KPVZCOZHP5YA5VCG556KXYKDODWTPBKOGC3BJN22HIMIE"
   };
 
   getCheckpoints = async () => {
+    console.log(this.state.batchId);
     let checkpoints = await getCheckpointsFromBatchId(this.state.batchId);
     console.log(checkpoints);
   };
+
+  handleChange = e => {
+    this.setState({ batchId: e.target.value });
+  }
 
   render() {
     const { classes } = this.props;
@@ -94,6 +99,8 @@ class Home extends Component {
             <InputBase
               className={classes.input}
               placeholder="Enter the Batch Address on your Medicine Packaging"
+              onChange={this.handleChange}
+              value={this.state.batchId}
             />
             <IconButton
               className={classes.iconButton}
