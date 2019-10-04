@@ -1,3 +1,5 @@
 export var attestation = {
-    delivery: ''
+    proof: '',
+    name: '',
+    timestamp: ''
 }

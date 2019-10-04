@@ -4,17 +4,17 @@ export var purchase = {
       age: 0,
       location: {
         lat: "",
-        lon: ""
+        lng: ""
       }
     },
     buyer: {
       name: "",
       location: {
         lat: "",
-        lon: ""
+        lng: ""
       }
     },
-    date: "",
+    timestamp: "",
     ingredients: [
       {
         name: "",
