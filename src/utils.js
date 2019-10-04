@@ -7,36 +7,32 @@ const aserver = "https://testnet-algorand.api.purestake.io/ps1";
 const aport = "";
 const algodclient = new algosdk.Algod(atoken, aserver, aport);
 
-const decodeNote = async (sender, txId) => {
+const decodeNote = async (note) => {
   try {
-    let tx = await algodclient.transactionInformation(sender, txId);
-    let decodednote = JSON.stringify(
-      algosdk.decodeObj(tx.note),
-      undefined,
-      1000
-    );
+    let decodednote = JSON.stringify(algosdk.decodeObj(note), undefined, 4);
+    // console.log(decodednote);
     return decodednote;
   } catch (err) {
     console.log("err", err);
   }
 };
 
-// export const getCheckpointsFromBatchId = async batchId => {
-const getCheckpointsFromBatchId = async batchId => {
+export const getCheckpointsFromBatchId = async batchId => {
   let params = await algodclient.getTransactionParams();
+  let endRound = params.lastRound;
   let txs = await algodclient.transactionByAddress(
     batchId,
-    params.lastRound - 1000,
-    params.lastRound
+    endRound - 100000,
+    endRound
   );
   var checkpoints = [];
-  if (txs.transactions) {
-    for (let tx of txs.transactions) {
+  if (txs["transactions"]) {
+    for (let tx of txs["transactions"]) {
       try {
-        let note = await decodeNote(tx.from, tx.tx);
+        let note = await decodeNote(tx.note);
         note = JSON.parse(note);
         let _tx = await algodclient.transactionById(note.proof);
-        let _note = await decodeNote(_tx.from, _tx.tx);
+        let _note = await decodeNote(_tx.note);
         _note = JSON.parse(_note);
         checkpoints.push({ name: note.name, template: _note });
       } catch (err) {}
@@ -45,11 +41,11 @@ const getCheckpointsFromBatchId = async batchId => {
   return checkpoints;
 };
 
-(async () => {
-  let checkpoints = await getCheckpointsFromBatchId(
-    "GYSFIKN4UQFI4KPVZCOZHP5YA5VCG556KXYKDODWTPBKOGC3BJN22HIMIE"
-  );
-  console.log(checkpoints);
-})().catch(e => {
-  console.log(e);
-});
+// (async () => {
+//   let checkpoints = await getCheckpointsFromBatchId(
+//     "GYSFIKN4UQFI4KPVZCOZHP5YA5VCG556KXYKDODWTPBKOGC3BJN22HIMIE"
+//   );
+//   console.log(checkpoints);
+// })().catch(e => {
+//   console.log(e);
+// });

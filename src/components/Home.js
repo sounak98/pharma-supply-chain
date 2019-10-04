@@ -49,30 +49,24 @@ const styles = theme => ({
   }
 });
 
-const manufacturer = {
-  location: {
-    lat: 100,
-    lon: 100
-  },
-  datetime: new Date(),
-  title: "Manufacturer XYZ",
-  description: "This is xyz the leading producer of paracetamols."
-};
-
 class Home extends Component {
   state = {
-    batchId: "GYSFIKN4UQFI4KPVZCOZHP5YA5VCG556KXYKDODWTPBKOGC3BJN22HIMIE"
+    batchId: "GYSFIKN4UQFI4KPVZCOZHP5YA5VCG556KXYKDODWTPBKOGC3BJN22HIMIE",
+    loading: false,
+    checkpoints: null
   };
 
   getCheckpoints = async () => {
     console.log(this.state.batchId);
     let checkpoints = await getCheckpointsFromBatchId(this.state.batchId);
-    console.log(checkpoints);
+    this.setState({ checkpoints }, () => {
+      console.log(this.state.checkpoints);
+    });
   };
 
   handleChange = e => {
     this.setState({ batchId: e.target.value });
-  }
+  };
 
   render() {
     const { classes } = this.props;
@@ -119,12 +113,17 @@ class Home extends Component {
             alignItems="center"
             spacing={2}
           >
-            <Grid item>
-              <CheckpointCard checkpointDetails={manufacturer} serial={1} />
-            </Grid>
-            <Grid item>
-              <CheckpointCard checkpointDetails={manufacturer} serial={2} />
-            </Grid>
+            {this.state.checkpoints &&
+              this.state.checkpoints.map((value, index) => {
+                return (
+                  <Grid item key={index}>
+                    <CheckpointCard
+                      checkpointDetails={value}
+                      serial={this.state.checkpoints.length - index}
+                    />
+                  </Grid>
+                );
+              })}
           </Grid>
         </Container>
       </Fragment>

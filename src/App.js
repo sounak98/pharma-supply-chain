@@ -10,7 +10,7 @@ import Home from "./components/Home";
 
 const theme = createMuiTheme({
   palette: {
-    type: "dark",
+    // type: "dark",
     primary: blue
   },
   typography: {
