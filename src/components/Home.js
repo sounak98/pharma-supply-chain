@@ -12,7 +12,9 @@ import SearchIcon from "@material-ui/icons/Search";
 import { withStyles } from "@material-ui/core/styles";
 
 import NavBar from "./NavBar";
-import CheckpointCard from "./CheckpointCard";
+import Transfer from "./Transfer";
+import Delivery from "./Delivery";
+import Purchase from "./Purchase";
 import Hero from "../assets/hero.jpg";
 
 import { getCheckpointsFromBatchId } from "../utils";
@@ -51,7 +53,7 @@ const styles = theme => ({
 
 class Home extends Component {
   state = {
-    batchId: "GYSFIKN4UQFI4KPVZCOZHP5YA5VCG556KXYKDODWTPBKOGC3BJN22HIMIE",
+    batchId: "YQ4I4NU7QPECTPYZGKWFZFSJCSLP2MRUZ3VSKBZG7VWZVISC4NLWFHCCCQ",
     loading: false,
     checkpoints: null
   };
@@ -113,17 +115,31 @@ class Home extends Component {
             alignItems="center"
             spacing={2}
           >
-            {this.state.checkpoints &&
-              this.state.checkpoints.map((value, index) => {
-                return (
-                  <Grid item key={index}>
-                    <CheckpointCard
-                      checkpointDetails={value}
-                      serial={this.state.checkpoints.length - index}
+            {this.state.checkpoints && (
+              <Fragment>
+                {this.state.checkpoints["Purchase"] && (
+                  <Grid item>
+                    <Purchase
+                      checkpointDetails={this.state.checkpoints["Purchase"]}
                     />
                   </Grid>
-                );
-              })}
+                )}
+                {this.state.checkpoints["Delivery"] && (
+                  <Grid item>
+                    <Delivery
+                      checkpointDetails={this.state.checkpoints["Delivery"]}
+                    />
+                  </Grid>
+                )}
+                {this.state.checkpoints["Transfer"] && (
+                  <Grid item>
+                    <Transfer
+                      checkpointDetails={this.state.checkpoints["Transfer"]}
+                    />
+                  </Grid>
+                )}
+              </Fragment>
+            )}
           </Grid>
         </Container>
       </Fragment>

@@ -7,7 +7,7 @@ const aserver = "https://testnet-algorand.api.purestake.io/ps1";
 const aport = "";
 const algodclient = new algosdk.Algod(atoken, aserver, aport);
 
-const decodeNote = async (note) => {
+const decodeNote = async note => {
   try {
     let decodednote = JSON.stringify(algosdk.decodeObj(note), undefined, 4);
     // console.log(decodednote);
@@ -22,10 +22,10 @@ export const getCheckpointsFromBatchId = async batchId => {
   let endRound = params.lastRound;
   let txs = await algodclient.transactionByAddress(
     batchId,
-    endRound - 100000,
+    endRound - 10000,
     endRound
   );
-  var checkpoints = [];
+  var checkpoints = {};
   if (txs["transactions"]) {
     for (let tx of txs["transactions"]) {
       try {
@@ -34,18 +34,9 @@ export const getCheckpointsFromBatchId = async batchId => {
         let _tx = await algodclient.transactionById(note.proof);
         let _note = await decodeNote(_tx.note);
         _note = JSON.parse(_note);
-        checkpoints.push({ name: note.name, template: _note });
+        checkpoints[note.name] = { name: note.name, template: _note };
       } catch (err) {}
     }
   }
   return checkpoints;
 };
-
-// (async () => {
-//   let checkpoints = await getCheckpointsFromBatchId(
-//     "GYSFIKN4UQFI4KPVZCOZHP5YA5VCG556KXYKDODWTPBKOGC3BJN22HIMIE"
-//   );
-//   console.log(checkpoints);
-// })().catch(e => {
-//   console.log(e);
-// });

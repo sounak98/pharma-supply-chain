@@ -5,15 +5,15 @@ import ReactJson from "react-json-view";
 import {
   Card,
   CardHeader,
-  CardMedia,
   CardContent,
-  Avatar
-  // Typography
+  Avatar,
+  Collapse,
+  CardActions,
+  IconButton
 } from "@material-ui/core";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import red from "@material-ui/core/colors/red";
 import { withStyles } from "@material-ui/styles";
-
-import Map from "./Map";
 
 const styles = theme => ({
   card: {
@@ -27,32 +27,18 @@ const styles = theme => ({
   }
 });
 
-const GOOGLE_API_KEY = "AIzaSyAelQF4Hbrbm6QluyTRaQ7y1Ge9AKWit0s";
-
 class CheckpointCard extends Component {
-  // componentDidMount() {
-  //   console.log(this.props.checkpointDetails);
-  // }
+  state = {
+    expanded: false
+  };
+
+  handleExpand = () => {
+    this.setState({ expanded: !this.state.expanded });
+  };
 
   render() {
     const { classes } = this.props;
-    let locations = [];
-    if (this.props.checkpointDetails.name === "Purchase") {
-      locations.push(this.props.checkpointDetails.template.buyer.location);
-      locations.push(this.props.checkpointDetails.template.seller.location);
-    }
-    if (this.props.checkpointDetails.name === "Transfer") {
-      locations.push(
-        this.props.checkpointDetails.template.distributor.location
-      );
-      locations.push(this.props.checkpointDetails.template.pharmcay.location);
-    }
-    for (let l of locations) {
-      l.lat = Number(l.lat);
-      l.lng = Number(l.lon);
-      delete l.lon;
-    }
-    console.log(locations);
+    const time = new Date(Number(this.props.checkpointDetails.template.timestamp));
     return (
       <Card className={classes.card}>
         <CardHeader
@@ -62,26 +48,19 @@ class CheckpointCard extends Component {
             </Avatar>
           }
           title={this.props.checkpointDetails.name}
-          // subheader={this.props.checkpointDetails.datetime.toLocaleString()}
+          subheader={time.toLocaleString()}
         />
-        {locations.length > 0 && (
-          <CardMedia className={classes.media}>
-            <Map
-              googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&v=3.exp&libraries=geometry,drawing,places`}
-              loadingElement={
-                <div style={{ width: "750px", height: "300px" }} />
-              }
-              containerElement={
-                <div style={{ width: "750px", height: "300px" }} />
-              }
-              mapElement={<div style={{ width: "750px", height: "300px" }} />}
-              positions={locations}
-            />
-          </CardMedia>
-        )}
-        <CardContent>
-          <ReactJson src={this.props.checkpointDetails.template} />
-        </CardContent>
+        {this.props.children}
+        <CardActions disableSpacing>
+          <IconButton onClick={this.handleExpand}>
+            <ExpandMoreIcon />
+          </IconButton>
+        </CardActions>
+        <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
+          <CardContent>
+            <ReactJson src={this.props.checkpointDetails.template} />
+          </CardContent>
+        </Collapse>
       </Card>
     );
   }
