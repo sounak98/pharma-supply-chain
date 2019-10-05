@@ -42,7 +42,6 @@ class NavBar extends Component {
               </IconButton>
             </Tooltip>
           </div>
-          <Button color="inherit">Login</Button>
         </Toolbar>
       </AppBar>
     );
