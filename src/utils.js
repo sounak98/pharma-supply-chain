@@ -22,7 +22,7 @@ export const getCheckpointsFromBatchId = async batchId => {
   let endRound = params.lastRound;
   let txs = await algodclient.transactionByAddress(
     batchId,
-    endRound - 10000,
+    endRound - 100000,
     endRound
   );
   var checkpoints = {};

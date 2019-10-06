@@ -19,6 +19,8 @@ Pharmaceutical Supply Chain based on Algorand Blockchain.
 
 Farmer will send raw materials to Manufacturer. Multiple farmers can send different raw materials to a manufacturer for a particular medicine.
 
+![Purchase](./src/assets/purchase.png)
+
 ```json
 {
     "seller": {
@@ -66,6 +68,8 @@ After this manufacture will prepare medicine and then divide it among batches, e
 
 Manufactures the medicines and sends the medicines to different distributors via transporters.
 
+![Delivery](./src/assets/delivery.png)
+
 ```json
 {
   "manufacturer": {
@@ -112,6 +116,8 @@ _Note that if `score < 7` then distributor will have to reject the batch_
 #### Transferring 
 
 Distributor transfers the medicine to pharmacies.
+
+![Transfer](./src/assets/transfer.png)
 
 ```json
 {
