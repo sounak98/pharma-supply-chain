@@ -60,7 +60,7 @@ After this manufacture will prepare medicine and then divide it among batches, e
 ```json
 {
   "name": "Purchase",
-  "proof": txID
+  "proof": "txID"
 }
 ```
 `proof` is the txId of transaction between farmer and manufacture.
@@ -83,7 +83,7 @@ Manufactures the medicines and sends the medicines to different distributors via
     "name": "",
     "vehicleNo": "",
     "tempSensor": {
-      "ideal": 0, // in celsius
+      "ideal": 0,
       "crossed" : 0
     }
   },
@@ -133,7 +133,7 @@ Distributor transfers the medicine to pharmacies.
         "name": "",
         "quantity": 0,
         "price": 0,
-        "id": medicineBatch.addr
+        "id": ""
       }
     ],
     "pharmacy": {
@@ -143,7 +143,7 @@ Distributor transfers the medicine to pharmacies.
         "lng": ""
       }
     },
-    "source": deliverId,
+    "source": "",
     "timestamp": ''
 }
 ```
@@ -157,7 +157,8 @@ Patients will go to pharmacies to buy medicines. Before buying they can see the 
 {
   "name": "",
   "proof": "",
-  "score": 0, (Conditional Parameter)
+  "score": 0
+}
 ```
 
 ## Portal UI/UX
